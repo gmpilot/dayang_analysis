@@ -1,0 +1,1073 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Dayang Global Lead Intelligence Portal</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
+  <script src="https://cdn.jsdelivr.net/npm/file-saver@2.0.5/dist/FileSaver.min.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    :root {
+      --primary: #003049;
+      --primary-light: #1a4d6e;
+      --secondary: #2196f3;
+      --accent: #ff7f50;
+      --success: #4caf50;
+      --warning: #ff9800;
+      --danger: #f44336;
+      --dark: #2d3436;
+      --light: #f8f9fa;
+      --gray: #eef2f6;
+      --border: #dbe5f1;
+    }
+    
+    body {
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      background: #f8fafc;
+      margin: 0;
+      color: var(--dark);
+      line-height: 1.6;
+    }
+    
+    header {
+      background: linear-gradient(135deg, var(--primary) 0%, #00416a 100%);
+      color: white;
+      padding: 40px 20px;
+      text-align: center;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+      position: relative;
+    }
+    
+    header h1 {
+      margin: 0;
+      font-size: 2.2rem;
+      font-weight: 700;
+    }
+    
+    .header-sub {
+      font-size: 1rem;
+      opacity: 0.9;
+      margin-top: 10px;
+    }
+    
+    .language-switcher {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      display: flex;
+      gap: 10px;
+    }
+    
+    .language-btn {
+      background: rgba(255,255,255,0.1);
+      border: none;
+      color: white;
+      padding: 5px 12px;
+      border-radius: 20px;
+      cursor: pointer;
+      transition: all 0.3s;
+      font-size: 0.9rem;
+    }
+    
+    .language-btn:hover {
+      background: rgba(255,255,255,0.2);
+    }
+    
+    .dashboard-container {
+      max-width: 1400px;
+      margin: 30px auto;
+      padding: 0 20px;
+    }
+    
+    .section-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+      padding-bottom: 15px;
+      border-bottom: 2px solid var(--border);
+    }
+    
+    .section-header h2 {
+      margin: 0;
+      color: var(--primary);
+      font-size: 1.4rem;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    
+    .summary-cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 20px;
+      margin-bottom: 30px;
+    }
+    
+    .summary-card {
+      background: white;
+      border-radius: 12px;
+      padding: 25px;
+      box-shadow: 0 6px 15px rgba(0,0,0,0.05);
+      border-top: 4px solid var(--secondary);
+      transition: transform 0.3s;
+      display: flex;
+      flex-direction: column;
+    }
+    
+    .summary-card:hover {
+      transform: translateY(-5px);
+    }
+    
+    .summary-card h3 {
+      margin-top: 0;
+      color: var(--primary);
+      font-size: 1.1rem;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    
+    .summary-card .value {
+      font-size: 2.2rem;
+      font-weight: 700;
+      color: var(--primary);
+      margin: 15px 0 5px;
+      flex-grow: 1;
+    }
+    
+    .summary-card .change {
+      font-size: 0.9rem;
+      color: #666;
+    }
+    
+    .positive {
+      color: var(--success);
+    }
+    
+    .negative {
+      color: var(--danger);
+    }
+    
+    .tabs-container {
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 6px 15px rgba(0,0,0,0.05);
+      overflow: hidden;
+      margin-bottom: 30px;
+    }
+    
+    .tabs-header {
+      display: flex;
+      border-bottom: 1px solid var(--border);
+      flex-wrap: wrap;
+      background: var(--gray);
+    }
+    
+    .tab-button {
+      padding: 15px 25px;
+      border: none;
+      background: none;
+      cursor: pointer;
+      font-weight: 600;
+      color: #666;
+      position: relative;
+      transition: all 0.3s;
+    }
+    
+    .tab-button.active {
+      color: var(--primary);
+      background: white;
+    }
+    
+    .tab-button.active:after {
+      content: '';
+      position: absolute;
+      bottom: -1px;
+      left: 0;
+      width: 100%;
+      height: 3px;
+      background: var(--secondary);
+    }
+    
+    .tab-content {
+      display: none;
+      padding: 30px;
+    }
+    
+    .tab-content.active {
+      display: block;
+    }
+    
+    .analytics-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 30px;
+      margin-bottom: 30px;
+    }
+    
+    .chart-container {
+      background: white;
+      border-radius: 12px;
+      padding: 25px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+      border: 1px solid var(--border);
+    }
+    
+    .chart-container h3 {
+      margin-top: 0;
+      color: var(--primary);
+      font-size: 1.1rem;
+    }
+    
+    canvas {
+      width: 100% !important;
+      height: auto !important;
+    }
+    
+    .insights-panel {
+      background: linear-gradient(to right, #f8f9fa 0%, #f0f9ff 100%);
+      border-left: 5px solid var(--secondary);
+      padding: 25px;
+      border-radius: 10px;
+      margin-bottom: 30px;
+    }
+    
+    .insights-panel h3 {
+      margin-top: 0;
+      color: var(--primary);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    
+    .insights-list {
+      padding-left: 20px;
+    }
+    
+    .insights-list li {
+      margin-bottom: 15px;
+      position: relative;
+    }
+    
+    .insights-list li:before {
+      content: '';
+      position: absolute;
+      left: -20px;
+      top: 10px;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--secondary);
+    }
+    
+    .tag {
+      display: inline-block;
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      margin-right: 8px;
+      margin-bottom: 8px;
+    }
+    
+    .tag-primary {
+      background: #e3f2fd;
+      color: var(--primary);
+    }
+    
+    .tag-success {
+      background: #e8f5e9;
+      color: var(--success);
+    }
+    
+    .tag-warning {
+      background: #fff8e1;
+      color: var(--warning);
+    }
+    
+    .download-section {
+      text-align: center;
+      margin: 40px 0;
+    }
+    
+    .download-btn {
+      background: var(--primary);
+      color: white;
+      border: none;
+      padding: 12px 25px;
+      border-radius: 8px;
+      font-weight: 600;
+      cursor: pointer;
+      margin: 0 10px;
+      transition: all 0.3s;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+    
+    .download-btn:hover {
+      background: var(--primary-light);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    }
+    
+    .action-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 25px;
+      margin-top: 30px;
+    }
+    
+    .action-card {
+      background: white;
+      border-radius: 12px;
+      padding: 25px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+      border: 1px solid var(--border);
+    }
+    
+    .action-card h3 {
+      margin-top: 0;
+      color: var(--primary);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding-bottom: 15px;
+      border-bottom: 1px solid var(--border);
+    }
+    
+    .action-card ul {
+      padding-left: 20px;
+    }
+    
+    .action-card li {
+      margin-bottom: 12px;
+      line-height: 1.5;
+    }
+    
+    .step-list {
+      counter-reset: step-counter;
+      padding-left: 0;
+    }
+    
+    .step-list li {
+      position: relative;
+      padding-left: 40px;
+      margin-bottom: 20px;
+      list-style: none;
+    }
+    
+    .step-list li:before {
+      counter-increment: step-counter;
+      content: counter(step-counter);
+      position: absolute;
+      left: 0;
+      top: 0;
+      width: 28px;
+      height: 28px;
+      background: var(--secondary);
+      color: white;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+      font-size: 0.9rem;
+    }
+    
+    .focus-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 15px;
+    }
+    
+    .focus-item {
+      background: #e3f2fd;
+      padding: 8px 15px;
+      border-radius: 20px;
+      font-size: 0.9rem;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    
+    .focus-item i {
+      color: var(--primary);
+    }
+    
+    footer {
+      text-align: center;
+      padding: 30px;
+      background: var(--primary);
+      color: white;
+      margin-top: 50px;
+    }
+    
+    .footer-links {
+      display: flex;
+      justify-content: center;
+      gap: 20px;
+      margin-top: 15px;
+    }
+    
+    .footer-links a {
+      color: white;
+      text-decoration: none;
+      transition: opacity 0.3s;
+    }
+    
+    .footer-links a:hover {
+      opacity: 0.8;
+    }
+    
+    .info-icon {
+      color: var(--secondary);
+      font-size: 0.9rem;
+      margin-left: 8px;
+      cursor: help;
+    }
+    
+    @media (max-width: 992px) {
+      .analytics-grid {
+        grid-template-columns: 1fr;
+      }
+      
+      .tabs-header {
+        overflow-x: auto;
+        white-space: nowrap;
+        padding-bottom: 5px;
+      }
+      
+      .tab-button {
+        padding: 12px 20px;
+      }
+      
+      .action-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+    
+    @media (max-width: 768px) {
+      .summary-cards {
+        grid-template-columns: 1fr;
+      }
+      
+      header h1 {
+        font-size: 1.8rem;
+      }
+      
+      .language-switcher {
+        position: static;
+        justify-content: center;
+        margin-top: 15px;
+      }
+      
+      .download-btn {
+        width: 100%;
+        margin: 10px 0;
+      }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="language-switcher">
+    <button class="language-btn" onclick="changeLanguage('en')">🇬🇧 English</button>
+    <button class="language-btn" onclick="changeLanguage('zh')">🇨🇳 中文</button>
+    <button class="language-btn" onclick="changeLanguage('bn')">🇧🇩 বাংলা</button>
+  </div>
+  
+  <h1 id="title"><i class="fas fa-chart-network"></i> Dayang Global Lead Intelligence</h1>
+  <div class="header-sub" id="subtitle">Strategic Sales Dashboard with Actionable Insights</div>
+</header>
+
+<div class="dashboard-container">
+  <div class="section-header">
+    <h2><i class="fas fa-tachometer-alt"></i> Performance Overview</h2>
+    <div class="time-filter">
+      <select id="timePeriod">
+        <option>Last 7 Days</option>
+        <option selected>Last 30 Days</option>
+        <option>Last Quarter</option>
+        <option>Year to Date</option>
+      </select>
+    </div>
+  </div>
+  
+  <div class="summary-cards">
+    <div class="summary-card">
+      <h3><i class="fas fa-home"></i> Capsule House <i class="fas fa-info-circle info-icon" title="Modular housing solutions for various applications"></i></h3>
+      <div class="value">34</div>
+      <div class="change"><span class="positive">↑ 12%</span> from last period</div>
+      <div class="conversion-rate">Conversion: 11.8%</div>
+    </div>
+    <div class="summary-card">
+      <h3><i class="fas fa-umbrella-beach"></i> Tensile Membrane <i class="fas fa-info-circle info-icon" title="Architectural fabric structures for commercial and public spaces"></i></h3>
+      <div class="value">138</div>
+      <div class="change"><span class="positive">↑ 36%</span> from last period</div>
+      <div class="conversion-rate">Conversion: 22.5%</div>
+    </div>
+    <div class="summary-card">
+      <h3><i class="fas fa-swimming-pool"></i> Amusement <i class="fas fa-info-circle info-icon" title="Recreational equipment for parks, resorts, and attractions"></i></h3>
+      <div class="value">30</div>
+      <div class="change"><span class="negative">↓ 8%</span> from last period</div>
+      <div class="conversion-rate">Conversion: 6.7%</div>
+    </div>
+    <div class="summary-card">
+      <h3><i class="fas fa-globe-asia"></i> Global Reach <i class="fas fa-info-circle info-icon" title="Active markets with current lead activity"></i></h3>
+      <div class="value">15</div>
+      <div class="change">Active markets</div>
+      <div class="conversion-rate">Top 3: India, PNG, Nigeria</div>
+    </div>
+  </div>
+
+  <div class="tabs-container">
+    <div class="tabs-header">
+      <button class="tab-button active" onclick="showTab('capsule')">
+        <i class="fas fa-home"></i> Capsule House
+      </button>
+      <button class="tab-button" onclick="showTab('tensile')">
+        <i class="fas fa-umbrella-beach"></i> Tensile Membrane
+      </button>
+      <button class="tab-button" onclick="showTab('amusement')">
+        <i class="fas fa-swimming-pool"></i> Amusement
+      </button>
+    </div>
+    
+    <div id="capsule" class="tab-content active">
+      <div class="analytics-grid">
+        <div class="chart-container">
+          <h3>Lead Status Breakdown</h3>
+          <canvas id="capsuleStatusChart"></canvas>
+        </div>
+        <div class="chart-container">
+          <h3>Top Target Countries</h3>
+          <canvas id="capsuleCountryChart"></canvas>
+        </div>
+      </div>
+      
+      <div class="insights-panel">
+        <h3><i class="fas fa-lightbulb"></i> Strategic Recommendations</h3>
+        <ul class="insights-list">
+          <li><strong>WhatsApp Dominance:</strong> All leads came through WhatsApp - 
+            <span class="tag tag-primary">Automate responses</span>
+            <span class="tag tag-primary">Quick-reply templates</span>
+          </li>
+          <li><strong>Key Markets:</strong> Focus on PNG, Kazakhstan, Saudi Arabia - 
+            <span class="tag tag-success">Localized content</span>
+            <span class="tag tag-success">Regional offers</span>
+          </li>
+          <li><strong>Content Strategy:</strong> 
+            <span class="tag tag-warning">Installation videos</span>
+            <span class="tag tag-warning">3D walkthroughs</span>
+            <span class="tag tag-warning">Climate-specific features</span>
+          </li>
+          <li><strong>Follow-up System:</strong> Automated sequence at 
+            <span class="tag">2 hours</span>
+            <span class="tag">24 hours</span>
+            <span class="tag">3 days</span>
+          </li>
+        </ul>
+      </div>
+      
+      <div class="action-grid">
+        <div class="action-card">
+          <h3><i class="fas fa-comments"></i> Lead Response Protocol</h3>
+          <ol class="step-list">
+            <li><strong>Initial Contact (within 15 min):</strong> Send welcome message with product catalog PDF</li>
+            <li><strong>Qualification (1 hour):</strong> Send qualification questionnaire to understand needs</li>
+            <li><strong>Value Proposition (24 hours):</strong> Share case studies and ROI analysis</li>
+            <li><strong>Follow-up (3 days):</strong> Check interest level and schedule demo call</li>
+            <li><strong>Closing (7 days):</strong> Present customized proposal and payment options</li>
+          </ol>
+        </div>
+        
+        <div class="action-card">
+          <h3><i class="fas fa-bullseye"></i> Future Sales Focus</h3>
+          <p>Prioritize these markets and strategies:</p>
+          <div class="focus-list">
+            <div class="focus-item"><i class="fas fa-map-marker-alt"></i> Papua New Guinea</div>
+            <div class="focus-item"><i class="fas fa-map-marker-alt"></i> Kazakhstan</div>
+            <div class="focus-item"><i class="fas fa-map-marker-alt"></i> Saudi Arabia</div>
+            <div class="focus-item"><i class="fas fa-hotel"></i> Resort Partnerships</div>
+            <div class="focus-item"><i class="fas fa-city"></i> Urban Housing Solutions</div>
+            <div class="focus-item"><i class="fas fa-mountain"></i> Remote Area Solutions</div>
+          </div>
+          <p style="margin-top: 20px;"><strong>Product Strategy:</strong></p>
+          <ul>
+            <li>Develop premium capsule models with climate control</li>
+            <li>Create modular expansion options for growing families</li>
+            <li>Offer financing solutions for emerging markets</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+    
+    <div id="tensile" class="tab-content">
+      <div class="analytics-grid">
+        <div class="chart-container">
+          <h3>Lead Status Breakdown</h3>
+          <canvas id="tensileStatusChart"></canvas>
+        </div>
+        <div class="chart-container">
+          <h3>Top Target Countries</h3>
+          <canvas id="tensileCountryChart"></canvas>
+        </div>
+      </div>
+      
+      <div class="insights-panel">
+        <h3><i class="fas fa-lightbulb"></i> Strategic Recommendations</h3>
+        <ul class="insights-list">
+          <li><strong>Peak Performance:</strong> July 10-14 generated 44% of leads - 
+            <span class="tag tag-primary">Replicate campaign</span>
+            <span class="tag tag-primary">Analyze success factors</span>
+          </li>
+          <li><strong>Core Markets:</strong> India, Nigeria, Bangladesh - 
+            <span class="tag tag-success">Local partnerships</span>
+            <span class="tag tag-success">Case studies</span>
+          </li>
+          <li><strong>Content Library:</strong> 
+            <span class="tag tag-warning">Installation guides</span>
+            <span class="tag tag-warning">Maintenance videos</span>
+            <span class="tag tag-warning">Customization options</span>
+          </li>
+          <li><strong>Response Optimization:</strong> 
+            <span class="tag">Under 1 hour</span>
+            <span class="tag">Technical specs</span>
+            <span class="tag">Commercial pricing</span>
+          </li>
+        </ul>
+      </div>
+      
+      <div class="action-grid">
+        <div class="action-card">
+          <h3><i class="fas fa-comments"></i> Lead Response Protocol</h3>
+          <ol class="step-list">
+            <li><strong>Immediate Response (within 30 min):</strong> Send technical specifications sheet</li>
+            <li><strong>Qualification (2 hours):</strong> Request project details and timeline</li>
+            <li><strong>Custom Solution (24 hours):</strong> Provide preliminary design concepts</li>
+            <li><strong>Follow-up (3 days):</strong> Schedule engineering consultation</li>
+            <li><strong>Closing (14 days):</strong> Present formal proposal with warranty details</li>
+          </ol>
+        </div>
+        
+        <div class="action-card">
+          <h3><i class="fas fa-bullseye"></i> Future Sales Focus</h3>
+          <p>Prioritize these markets and strategies:</p>
+          <div class="focus-list">
+            <div class="focus-item"><i class="fas fa-map-marker-alt"></i> India</div>
+            <div class="focus-item"><i class="fas fa-map-marker-alt"></i> Nigeria</div>
+            <div class="focus-item"><i class="fas fa-map-marker-alt"></i> Bangladesh</div>
+            <div class="focus-item"><i class="fas fa-university"></i> Government Projects</div>
+            <div class="focus-item"><i class="fas fa-store"></i> Commercial Complexes</div>
+            <div class="focus-item"><i class="fas fa-landmark"></i> Public Infrastructure</div>
+          </div>
+          <p style="margin-top: 20px;"><strong>Product Strategy:</strong></p>
+          <ul>
+            <li>Develop hurricane-resistant designs for coastal regions</li>
+            <li>Create modular systems for rapid deployment</li>
+            <li>Offer maintenance packages for long-term clients</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+    
+    <div id="amusement" class="tab-content">
+      <div class="analytics-grid">
+        <div class="chart-container">
+          <h3>Lead Status Breakdown</h3>
+          <canvas id="amusementStatusChart"></canvas>
+        </div>
+        <div class="chart-container">
+          <h3>Top Target Countries</h3>
+          <canvas id="amusementCountryChart"></canvas>
+        </div>
+      </div>
+      
+      <div class="insights-panel">
+        <h3><i class="fas fa-lightbulb"></i> Strategic Recommendations</h3>
+        <ul class="insights-list">
+          <li><strong>Channel Focus:</strong> WhatsApp is only converting platform - 
+            <span class="tag tag-primary">Redirect FB/IG budget</span>
+            <span class="tag tag-primary">Click-to-chat ads</span>
+          </li>
+          <li><strong>Market Segments:</strong> 
+            <span class="tag tag-success">Resorts</span>
+            <span class="tag tag-success">Water parks</span>
+            <span class="tag tag-success">Municipal projects</span>
+          </li>
+          <li><strong>Sales Tools:</strong> 
+            <span class="tag tag-warning">ROI calculator</span>
+            <span class="tag tag-warning">Safety certifications</span>
+            <span class="tag tag-warning">Installation timeline</span>
+          </li>
+          <li><strong>Lead Nurturing:</strong> 
+            <span class="tag">Country-specific groups</span>
+            <span class="tag">Seasonal promotions</span>
+            <span class="tag">Bulk purchase discounts</span>
+          </li>
+        </ul>
+      </div>
+      
+      <div class="action-grid">
+        <div class="action-card">
+          <h3><i class="fas fa-comments"></i> Lead Response Protocol</h3>
+          <ol class="step-list">
+            <li><strong>First Contact (within 1 hour):</strong> Send product catalog with safety certifications</li>
+            <li><strong>Needs Assessment (4 hours):</strong> Send facility questionnaire and capacity requirements</li>
+            <li><strong>Value Demonstration (48 hours):</strong> Share ROI calculator and installation videos</li>
+            <li><strong>Follow-up (5 days):</strong> Offer site evaluation consultation</li>
+            <li><strong>Closing (21 days):</strong> Present customized package with maintenance plan</li>
+          </ol>
+        </div>
+        
+        <div class="action-card">
+          <h3><i class="fas fa-bullseye"></i> Future Sales Focus</h3>
+          <p>Prioritize these markets and strategies:</p>
+          <div class="focus-list">
+            <div class="focus-item"><i class="fas fa-map-marker-alt"></i> Saudi Arabia</div>
+            <div class="focus-item"><i class="fas fa-map-marker-alt"></i> UAE</div>
+            <div class="focus-item"><i class="fas fa-map-marker-alt"></i> Qatar</div>
+            <div class="focus-item"><i class="fas fa-umbrella-beach"></i> Resort Chains</div>
+            <div class="focus-item"><i class="fas fa-city"></i> Urban Redevelopment</div>
+            <div class="focus-item"><i class="fas fa-school"></i> Educational Facilities</div>
+          </div>
+          <p style="margin-top: 20px;"><strong>Product Strategy:</strong></p>
+          <ul>
+            <li>Develop extreme climate-resistant equipment</li>
+            <li>Create modular playground systems</li>
+            <li>Offer themed packages for resorts</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <div class="download-section">
+    <button class="download-btn" onclick="downloadReport('pdf')">
+      <i class="fas fa-file-pdf"></i> Download Full Report (PDF)
+    </button>
+    <button class="download-btn" onclick="downloadReport('csv')">
+      <i class="fas fa-file-csv"></i> Export Lead Data (CSV)
+    </button>
+    <button class="download-btn" onclick="downloadReport('ppt')">
+      <i class="fas fa-file-powerpoint"></i> Strategy Presentation (PPT)
+    </button>
+  </div>
+</div>
+
+<footer>
+  <p>© 2025 Dayang Group International. All rights reserved.</p>
+  <div class="footer-links">
+    <a href="#"><i class="fas fa-envelope"></i> Contact Sales</a>
+    <a href="#"><i class="fas fa-info-circle"></i> About Our Solutions</a>
+    <a href="#"><i class="fas fa-lock"></i> Privacy Policy</a>
+    <a href="#"><i class="fas fa-book"></i> Knowledge Base</a>
+  </div>
+</footer>
+
+<script>
+  Chart.register(ChartDataLabels);
+  
+  // Language switching
+  function changeLanguage(lang) {
+    const texts = {
+      en: { 
+        title: "<i class='fas fa-chart-network'></i> Dayang Global Lead Intelligence",
+        subtitle: "Strategic Sales Dashboard with Actionable Insights",
+        capsule: "Capsule House",
+        tensile: "Tensile Membrane",
+        amusement: "Amusement Equipment"
+      },
+      zh: { 
+        title: "<i class='fas fa-chart-network'></i> 大阳集团全球客户数据分析平台",
+        subtitle: "具有可行洞察力的战略销售仪表板",
+        capsule: "胶囊屋",
+        tensile: "张拉膜结构",
+        amusement: "游乐设备" 
+      },
+      bn: { 
+        title: "<i class='fas fa-chart-network'></i> ডায়াং গ্লোবাল লিড ইন্টেলিজেন্স",
+        subtitle: "কার্যকরী অন্তর্দৃষ্টি সহ কৌশলগত বিক্রয় ড্যাশবোর্ড",
+        capsule: "ক্যাপসুল হাউস",
+        tensile: "টেনসাইল মেমব্রেন",
+        amusement: "বিনোদন সরঞ্জাম" 
+      }
+    };
+    document.getElementById('title').innerHTML = texts[lang].title;
+    document.getElementById('subtitle').innerText = texts[lang].subtitle;
+    document.querySelector('[onclick="showTab(\'capsule\')"]').innerHTML = `<i class="fas fa-home"></i> ${texts[lang].capsule}`;
+    document.querySelector('[onclick="showTab(\'tensile\')"]').innerHTML = `<i class="fas fa-umbrella-beach"></i> ${texts[lang].tensile}`;
+    document.querySelector('[onclick="showTab(\'amusement\')"]').innerHTML = `<i class="fas fa-swimming-pool"></i> ${texts[lang].amusement}`;
+  }
+
+  // Tab switching
+  function showTab(id) {
+    document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+    document.querySelectorAll('.tab-button').forEach(b => b.classList.remove('active'));
+    document.querySelector(`.tab-button[onclick="showTab('${id}')"]`).classList.add('active');
+  }
+
+  // Report download
+  function downloadReport(type) {
+    const content = {
+      pdf: {
+        type: "application/pdf",
+        filename: "dayang_lead_report.pdf",
+        content: "Dayang Global Lead Report\n\nCapsule House:\n- Total Leads: 34\n- Responded: 4\n- Potential: 2\n\nTensile Membrane:\n- Total Leads: 138\n- Responded: 31\n- Potential: 18\n\nAmusement Equipment:\n- Total Leads: 30\n- Responded: 12\n- Potential: 1"
+      },
+      csv: {
+        type: "text/csv;charset=utf-8;",
+        filename: "dayang_leads.csv",
+        content: "Product,Total Leads,Responded,Potential\nCapsule House,34,4,2\nTensile Membrane,138,31,18\nAmusement Equipment,30,12,1"
+      },
+      ppt: {
+        type: "application/vnd.ms-powerpoint",
+        filename: "sales_strategy.pptx",
+        content: "Dayang Sales Strategy Presentation\n\nKey focus areas:\n- Market prioritization\n- Lead response protocols\n- Product development roadmap"
+      }
+    };
+    const blob = new Blob([content[type].content], { type: content[type].type });
+    saveAs(blob, content[type].filename);
+  }
+
+  // Charts initialization
+  document.addEventListener('DOMContentLoaded', function() {
+    // Capsule House Charts
+    new Chart(document.getElementById("capsuleStatusChart"), {
+      type: 'doughnut',
+      data: {
+        labels: ["Qualified", "Potential", "Needs Follow-up"],
+        datasets: [{
+          data: [4, 2, 28],
+          backgroundColor: ["#4caf50", "#ff9800", "#f44336"],
+          borderWidth: 0
+        }]
+      },
+      options: {
+        plugins: {
+          datalabels: {
+            color: '#fff',
+            font: { weight: 'bold', size: 14 },
+            formatter: (value, ctx) => {
+              const total = ctx.chart.data.datasets[0].data.reduce((a, b) => a + b, 0);
+              const percentage = Math.round((value / total) * 100);
+              return `${percentage}%`;
+            }
+          },
+          legend: {
+            position: 'right',
+            labels: {
+              font: { size: 12 }
+            }
+          },
+          tooltip: {
+            callbacks: {
+              label: function(context) {
+                return `${context.label}: ${context.raw} leads`;
+              }
+            }
+          }
+        },
+        cutout: '65%'
+      },
+      plugins: [ChartDataLabels]
+    });
+    
+    new Chart(document.getElementById("capsuleCountryChart"), {
+      type: 'bar',
+      data: {
+        labels: ["Papua New Guinea", "Kazakhstan", "Saudi Arabia", "Solomon Islands", "Bangladesh"],
+        datasets: [{
+          label: 'Leads',
+          data: [6, 4, 4, 3, 2],
+          backgroundColor: '#2196f3',
+          borderRadius: 6
+        }]
+      },
+      options: {
+        plugins: {
+          datalabels: {
+            anchor: 'end',
+            align: 'top',
+            color: '#2196f3',
+            font: { weight: 'bold' }
+          },
+          legend: {
+            display: false
+          }
+        },
+        scales: {
+          y: {
+            beginAtZero: true,
+            ticks: {
+              precision: 0
+            }
+          }
+        }
+      },
+      plugins: [ChartDataLabels]
+    });
+    
+    // Tensile Membrane Charts
+    new Chart(document.getElementById("tensileStatusChart"), {
+      type: 'doughnut',
+      data: {
+        labels: ["Qualified", "Potential", "Needs Follow-up"],
+        datasets: [{
+          data: [31, 18, 89],
+          backgroundColor: ["#4caf50", "#ff9800", "#f44336"],
+          borderWidth: 0
+        }]
+      },
+      options: {
+        plugins: {
+          datalabels: {
+            color: '#fff',
+            font: { weight: 'bold', size: 14 },
+            formatter: (value, ctx) => {
+              const total = ctx.chart.data.datasets[0].data.reduce((a, b) => a + b, 0);
+              const percentage = Math.round((value / total) * 100);
+              return `${percentage}%`;
+            }
+          },
+          legend: {
+            position: 'right',
+            labels: {
+              font: { size: 12 }
+            }
+          },
+          tooltip: {
+            callbacks: {
+              label: function(context) {
+                return `${context.label}: ${context.raw} leads`;
+              }
+            }
+          }
+        },
+        cutout: '65%'
+      },
+      plugins: [ChartDataLabels]
+    });
+    
+    new Chart(document.getElementById("tensileCountryChart"), {
+      type: 'bar',
+      data: {
+        labels: ["India", "Nigeria", "Bangladesh", "Saudi Arabia", "Kenya"],
+        datasets: [{
+          label: 'Leads',
+          data: [68, 33, 18, 10, 7],
+          backgroundColor: '#2196f3',
+          borderRadius: 6
+        }]
+      },
+      options: {
+        plugins: {
+          datalabels: {
+            anchor: 'end',
+            align: 'top',
+            color: '#2196f3',
+            font: { weight: 'bold' }
+          },
+          legend: {
+            display: false
+          }
+        },
+        scales: {
+          y: {
+            beginAtZero: true,
+            ticks: {
+              precision: 0
+            }
+          }
+        }
+      },
+      plugins: [ChartDataLabels]
+    });
+    
+    // Amusement Equipment Charts
+    new Chart(document.getElementById("amusementStatusChart"), {
+      type: 'doughnut',
+      data: {
+        labels: ["Qualified", "Potential", "Needs Follow-up"],
+        datasets: [{
+          data: [12, 1, 17],
+          backgroundColor: ["#4caf50", "#ff9800", "#f44336"],
+          borderWidth: 0
+        }]
+      },
+      options: {
+        plugins: {
+          datalabels: {
+            color: '#fff',
+            font: { weight: 'bold', size: 14 },
+            formatter: (value, ctx) => {
+              const total = ctx.chart.data.datasets[0].data.reduce((a, b) => a + b, 0);
+              const percentage = Math.round((value / total) * 100);
+              return `${percentage}%`;
+            }
+          },
+          legend: {
+            position: 'right',
+            labels: {
+              font: { size: 12 }
+            }
+          },
+          tooltip: {
+            callbacks: {
+              label: function(context) {
+                return `${context.label}: ${context.raw} leads`;
+              }
+            }
+          }
+        },
+        cutout: '65%'
+      },
+      plugins: [ChartDataLabels]
+    });
+    
+    new Chart(document.getElementById("amusementCountryChart"), {
+      type: 'bar',
+      data: {
+        labels: ["Saudi Arabia", "UAE", "Oman", "Qatar", "Yemen"],
+        datasets: [{
+          label: 'Leads',
+          data: [5, 1, 1, 2, 1],
+          backgroundColor: '#2196f3',
+          borderRadius: 6
+        }]
+      },
+      options: {
+        plugins: {
+          datalabels: {
+            anchor: 'end',
+            align: 'top',
+            color: '#2196f3',
+            font: { weight: 'bold' }
+          },
+          legend: {
+            display: false
+          }
+        },
+        scales: {
+          y: {
+            beginAtZero: true,
+            ticks: {
+              precision: 0
+            }
+          }
+        }
+      },
+      plugins: [ChartDataLabels]
+    });
+  });
+</script>
+
+</body>
+</html>
